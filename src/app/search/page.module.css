@@ -1,0 +1,200 @@
+/* 검색 페이지 스타일 */
+
+.searchPage {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* 검색 바 */
+.searchBarSection {
+  margin-bottom: 2rem;
+}
+
+.searchForm {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.searchButton {
+  padding: 0.75rem 1.5rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.searchButton:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.searchSummary {
+  padding: 0.75rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+/* 검색 결과 */
+.resultsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.bookCard {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.bookCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.bookCover {
+  flex-shrink: 0;
+}
+
+.coverImage {
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.noCover {
+  width: 120px;
+  height: 160px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7f8c8d;
+}
+
+.bookInfo {
+  flex: 1;
+}
+
+.bookTitle {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+
+.bookAuthor {
+  color: #7f8c8d;
+  margin-bottom: 0.25rem;
+}
+
+.bookPublisher {
+  color: #95a5a6;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.availableLibraries h4 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.availableLibraries ul {
+  list-style: none;
+  padding: 0;
+}
+
+.availableLibraries li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.libraryName {
+  font-size: 0.9rem;
+}
+
+.availabilityBadge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.availabilityBadge.available {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.availabilityBadge.unavailable {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.moreLibraries {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* 페이지네이션 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.paginationButton {
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: #f8f9fa;
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationButton.active {
+  background-color: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+@media (max-width: 768px) {
+  .bookCard {
+    flex-direction: column;
+  }
+
+  .bookCover {
+    align-self: center;
+  }
+}

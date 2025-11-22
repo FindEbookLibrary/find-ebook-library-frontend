@@ -1,0 +1,238 @@
+/**
+ * 글로벌 스타일
+ * Next.js 15 App Router의 전역 CSS
+ *
+ * Tailwind CSS를 사용하지 않고 순수 CSS로 작성
+ */
+
+/**
+ * CSS Reset
+ * 브라우저마다 다른 기본 스타일을 초기화
+ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/**
+ * CSS 변수 정의
+ * :root 선택자를 사용하여 전역 변수 선언
+ */
+:root {
+  /* 색상 팔레트 */
+  --primary-color: #3498db;
+  --secondary-color: #2c3e50;
+  --success-color: #2ecc71;
+  --danger-color: #e74c3c;
+  --warning-color: #f39c12;
+
+  /* 배경색 */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-dark: #2c3e50;
+
+  /* 텍스트 색상 */
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
+  --text-light: #95a5a6;
+
+  /* 간격 */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* 폰트 크기 */
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+
+  /* 기타 */
+  --border-radius: 4px;
+  --border-color: #ddd;
+}
+
+/**
+ * HTML과 Body 기본 스타일
+ */
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  line-height: 1.6;
+}
+
+/**
+ * 앱 전체 레이아웃
+ */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/**
+ * 메인 콘텐츠
+ */
+.main-content {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+}
+
+/**
+ * 푸터
+ */
+.footer {
+  background-color: #34495e;
+  color: white;
+  padding: var(--spacing-xl);
+  margin-top: auto;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer a {
+  color: #3498db;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/**
+ * 제목 스타일
+ */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: var(--spacing-md);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: var(--font-size-2xl);
+}
+
+h2 {
+  font-size: var(--font-size-xl);
+}
+
+h3 {
+  font-size: var(--font-size-lg);
+}
+
+/**
+ * 링크 스타일
+ */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+/**
+ * 버튼 기본 스타일
+ */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: var(--border-radius);
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/**
+ * 입력 필드 스타일
+ */
+input[type='text'],
+input[type='email'],
+input[type='password'] {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  width: 100%;
+  font-family: inherit;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/**
+ * 로딩, 에러, 결과 없음 섹션
+ */
+.loading-section,
+.error-section,
+.no-results-section {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.error-message {
+  color: var(--danger-color);
+  font-weight: bold;
+}
+
+/**
+ * 유틸리티 클래스
+ */
+.text-center {
+  text-align: center;
+}
+
+.mt-1 {
+  margin-top: var(--spacing-md);
+}
+
+.mb-1 {
+  margin-bottom: var(--spacing-md);
+}
+
+/**
+ * 반응형 디자인
+ */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+
+  .main-content {
+    padding: var(--spacing-md);
+  }
+}
