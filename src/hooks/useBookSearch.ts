@@ -5,6 +5,7 @@
 
 import { useEffect } from 'react';
 import { useSearchStore } from '@stores/searchStore';
+import { useUserStore } from '@stores/userStore';
 import { bookService } from '@lib/services/book.service';
 import { BookSearchParams } from '@types/book.types';
 
@@ -32,7 +33,7 @@ import { BookSearchParams } from '@types/book.types';
  * }
  */
 export const useBookSearch = () => {
-  // Zustand store에서 필요한 상태와 액션 가져오기
+  // 검색 Store에서 필요한 상태와 액션 가져오기
   const {
     keyword,
     results,
@@ -50,6 +51,12 @@ export const useBookSearch = () => {
     setError,
     addRecentKeyword,
   } = useSearchStore();
+
+  // 사용자 Store에서 관심 도서관 정보 가져오기
+  const {
+    interestLibraryCodes,
+    isInterestFilterEnabled,
+  } = useUserStore();
 
   /**
    * 검색 실행 함수
@@ -69,12 +76,21 @@ export const useBookSearch = () => {
     setError(null);
 
     try {
+      // 관심 도서관 필터가 활성화되어 있으면 관심 도서관 목록을 사용
+      // 그렇지 않으면 선택된 도서관 목록 또는 전체 도서관 사용
+      let targetLibraryCodes = params?.libraryCodes || selectedLibraryCodes;
+
+      if (isInterestFilterEnabled && interestLibraryCodes.length > 0) {
+        // 관심 도서관 필터가 활성화되어 있으면 관심 도서관 목록만 사용
+        targetLibraryCodes = interestLibraryCodes;
+      }
+
       // 검색 파라미터 구성
       const searchParams: BookSearchParams = {
         keyword: searchKeyword,
         pageNo: params?.pageNo || currentPage,
         pageSize: params?.pageSize || pageSize,
-        libraryCodes: params?.libraryCodes || selectedLibraryCodes,
+        libraryCodes: targetLibraryCodes,
         searchType: params?.searchType || searchType,
       };
 

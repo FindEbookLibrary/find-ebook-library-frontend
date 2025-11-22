@@ -1,0 +1,208 @@
+/**
+ * LibrarySelector 컴포넌트 스타일
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+}
+
+.description {
+  font-size: 14px;
+  color: #666666;
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 14px;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+  border-color: #0066cc;
+}
+
+.selectAllButton {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0066cc;
+  background-color: #ffffff;
+  border: 1px solid #0066cc;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.selectAllButton:hover {
+  background-color: #0066cc;
+  color: #ffffff;
+}
+
+.selectedCount {
+  padding: 12px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.libraryList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+/* 스크롤바 스타일링 */
+.libraryList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.libraryList::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.libraryList::-webkit-scrollbar-thumb {
+  background: #cccccc;
+  border-radius: 4px;
+}
+
+.libraryList::-webkit-scrollbar-thumb:hover {
+  background: #999999;
+}
+
+.libraryItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background-color: #fafafa;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.libraryItem:hover {
+  background-color: #f0f0f0;
+  border-color: #0066cc;
+}
+
+.libraryItem.selected {
+  background-color: #e6f2ff;
+  border-color: #0066cc;
+}
+
+.checkbox {
+  margin-top: 4px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #0066cc;
+}
+
+.libraryInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.libraryName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.libraryInstitution {
+  font-size: 14px;
+  color: #0066cc;
+  font-weight: 500;
+}
+
+.libraryAddress {
+  font-size: 13px;
+  color: #666666;
+}
+
+.loading {
+  padding: 40px 20px;
+  text-align: center;
+  color: #666666;
+  font-size: 14px;
+}
+
+.empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #999999;
+  font-size: 14px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .selectAllButton {
+    width: 100%;
+  }
+
+  .libraryList {
+    max-height: 400px;
+  }
+
+  .libraryItem {
+    padding: 12px;
+  }
+
+  .libraryName {
+    font-size: 15px;
+  }
+}

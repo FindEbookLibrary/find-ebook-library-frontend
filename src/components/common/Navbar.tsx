@@ -10,7 +10,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useUserStore } from '@/stores/userStore';
+import { useUserStore } from '@stores/userStore';
 import styles from './Navbar.module.css';
 
 /**
@@ -43,6 +43,12 @@ export default function Navbar() {
           </li>
           <li>
             <Link href="/bestseller">베스트셀러</Link>
+          </li>
+          <li>
+            <Link href="/bookshelf">내 서재</Link>
+          </li>
+          <li>
+            <Link href="/library">도서관 관리</Link>
           </li>
         </ul>
 

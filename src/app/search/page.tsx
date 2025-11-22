@@ -8,8 +8,10 @@
 
 'use client';
 
-import { useBookSearch } from '@/hooks/useBookSearch';
-import { useUserStore } from '@/stores/userStore';
+import { useBookSearch } from '@hooks/useBookSearch';
+import { useUserStore } from '@stores/userStore';
+import InterestLibraryFilter from '@components/library/InterestLibraryFilter';
+import BookmarkButton from '@components/common/BookmarkButton';
 import Image from 'next/image';
 import styles from './page.module.css';
 
@@ -107,6 +109,9 @@ export default function SearchPage() {
         )}
       </div>
 
+      {/* 관심 도서관 필터 */}
+      <InterestLibraryFilter />
+
       {/* 로딩 */}
       {isLoading && (
         <div className="loading-section">
@@ -144,7 +149,10 @@ export default function SearchPage() {
 
                 {/* 책 정보 */}
                 <div className={styles.bookInfo}>
-                  <h3 className={styles.bookTitle}>{book.title}</h3>
+                  <div className={styles.bookHeader}>
+                    <h3 className={styles.bookTitle}>{book.title}</h3>
+                    <BookmarkButton book={book} size="small" showText={false} />
+                  </div>
                   <p className={styles.bookAuthor}>{book.author}</p>
                   <p className={styles.bookPublisher}>
                     {book.publisher}{' '}

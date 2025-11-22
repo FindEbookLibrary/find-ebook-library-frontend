@@ -20,6 +20,12 @@ interface UserState {
   /** 사용자가 접근 가능한 도서관 목록 */
   accessibleLibraries: Library[];
 
+  /** 사용자가 관심있는(필터링하고 싶은) 도서관 코드 목록 */
+  interestLibraryCodes: string[];
+
+  /** 관심 도서관 필터링 활성화 여부 */
+  isInterestFilterEnabled: boolean;
+
   /** 로딩 상태 */
   isLoading: boolean;
 
@@ -78,6 +84,40 @@ interface UserState {
    * @param tokens - 새 토큰 정보
    */
   refreshTokens: (tokens: AuthTokens) => void;
+
+  /**
+   * 관심 도서관 추가
+   * 사용자가 검색 시 필터링하고 싶은 도서관을 추가합니다.
+   *
+   * @param libCode - 도서관 코드
+   */
+  addInterestLibrary: (libCode: string) => void;
+
+  /**
+   * 관심 도서관 제거
+   *
+   * @param libCode - 도서관 코드
+   */
+  removeInterestLibrary: (libCode: string) => void;
+
+  /**
+   * 관심 도서관 전체 설정
+   *
+   * @param libCodes - 도서관 코드 배열
+   */
+  setInterestLibraries: (libCodes: string[]) => void;
+
+  /**
+   * 관심 도서관 필터링 활성화/비활성화
+   *
+   * @param enabled - 활성화 여부
+   */
+  setInterestFilterEnabled: (enabled: boolean) => void;
+
+  /**
+   * 관심 도서관 전체 초기화
+   */
+  clearInterestLibraries: () => void;
 }
 
 /**
@@ -134,6 +174,59 @@ const removeTokensFromStorage = (): void => {
 };
 
 /**
+ * 로컬 스토리지에서 관심 도서관 코드 불러오기
+ * 페이지 새로고침 시에도 관심 도서관 목록을 유지하기 위해 사용
+ */
+const loadInterestLibrariesFromStorage = (): string[] => {
+  try {
+    const stored = localStorage.getItem('interestLibraryCodes');
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('관심 도서관 목록 로드 실패:', error);
+    return [];
+  }
+};
+
+/**
+ * 로컬 스토리지에 관심 도서관 코드 저장
+ *
+ * @param libCodes - 관심 도서관 코드 배열
+ */
+const saveInterestLibrariesToStorage = (libCodes: string[]): void => {
+  try {
+    localStorage.setItem('interestLibraryCodes', JSON.stringify(libCodes));
+  } catch (error) {
+    console.error('관심 도서관 목록 저장 실패:', error);
+  }
+};
+
+/**
+ * 로컬 스토리지에서 관심 도서관 필터 활성화 상태 불러오기
+ */
+const loadInterestFilterEnabledFromStorage = (): boolean => {
+  try {
+    const stored = localStorage.getItem('isInterestFilterEnabled');
+    return stored === 'true';
+  } catch (error) {
+    console.error('관심 도서관 필터 상태 로드 실패:', error);
+    return false;
+  }
+};
+
+/**
+ * 로컬 스토리지에 관심 도서관 필터 활성화 상태 저장
+ *
+ * @param enabled - 활성화 여부
+ */
+const saveInterestFilterEnabledToStorage = (enabled: boolean): void => {
+  try {
+    localStorage.setItem('isInterestFilterEnabled', enabled.toString());
+  } catch (error) {
+    console.error('관심 도서관 필터 상태 저장 실패:', error);
+  }
+};
+
+/**
  * 사용자 Store 생성
  * create 함수는 Zustand의 store를 생성하는 함수입니다.
  * set 함수로 상태를 변경하고, get 함수로 현재 상태를 가져올 수 있습니다.
@@ -143,6 +236,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   user: null,
   tokens: loadTokensFromStorage(), // 로컬 스토리지에서 토큰 불러오기
   accessibleLibraries: [],
+  interestLibraryCodes: loadInterestLibrariesFromStorage(), // 로컬 스토리지에서 관심 도서관 불러오기
+  isInterestFilterEnabled: loadInterestFilterEnabledFromStorage(), // 로컬 스토리지에서 필터 상태 불러오기
   isLoading: false,
   error: null,
 
@@ -194,5 +289,49 @@ export const useUserStore = create<UserState>((set, get) => ({
     saveTokensToStorage(tokens); // 새 토큰 저장
 
     set({ tokens });
+  },
+
+  // 관심 도서관 관련 액션들
+  addInterestLibrary: (libCode) => {
+    const currentCodes = get().interestLibraryCodes;
+
+    // 이미 추가된 도서관이면 무시
+    if (currentCodes.includes(libCode)) {
+      return;
+    }
+
+    // 새로운 도서관 코드 추가
+    const newCodes = [...currentCodes, libCode];
+    saveInterestLibrariesToStorage(newCodes); // 로컬 스토리지에 저장
+
+    set({ interestLibraryCodes: newCodes });
+  },
+
+  removeInterestLibrary: (libCode) => {
+    const currentCodes = get().interestLibraryCodes;
+
+    // 해당 도서관 코드 제거
+    const newCodes = currentCodes.filter((code) => code !== libCode);
+    saveInterestLibrariesToStorage(newCodes); // 로컬 스토리지에 저장
+
+    set({ interestLibraryCodes: newCodes });
+  },
+
+  setInterestLibraries: (libCodes) => {
+    saveInterestLibrariesToStorage(libCodes); // 로컬 스토리지에 저장
+
+    set({ interestLibraryCodes: libCodes });
+  },
+
+  setInterestFilterEnabled: (enabled) => {
+    saveInterestFilterEnabledToStorage(enabled); // 로컬 스토리지에 저장
+
+    set({ isInterestFilterEnabled: enabled });
+  },
+
+  clearInterestLibraries: () => {
+    saveInterestLibrariesToStorage([]); // 로컬 스토리지 초기화
+
+    set({ interestLibraryCodes: [] });
   },
 }));

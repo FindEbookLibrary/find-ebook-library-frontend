@@ -1,0 +1,94 @@
+/**
+ * BookmarkButton 컴포넌트 스타일
+ */
+
+.bookmarkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #666666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.bookmarkButton:hover {
+  border-color: #ffcc00;
+  background-color: #fffef5;
+  color: #ffcc00;
+}
+
+.bookmarkButton.bookmarked {
+  border-color: #ffcc00;
+  background-color: #fffef5;
+  color: #ffcc00;
+}
+
+.icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.text {
+  white-space: nowrap;
+}
+
+/* 크기 변형 */
+.small {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.small .icon {
+  font-size: 16px;
+}
+
+.medium {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.medium .icon {
+  font-size: 18px;
+}
+
+.large {
+  padding: 10px 20px;
+  font-size: 15px;
+}
+
+.large .icon {
+  font-size: 20px;
+}
+
+/* 활성 상태 (클릭 시) */
+.bookmarkButton:active {
+  transform: scale(0.95);
+}
+
+/* 접근성 */
+.bookmarkButton:focus-visible {
+  outline: 2px solid #ffcc00;
+  outline-offset: 2px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .bookmarkButton {
+    padding: 6px 12px;
+  }
+
+  .text {
+    display: none;
+  }
+
+  .icon {
+    font-size: 20px;
+  }
+}
