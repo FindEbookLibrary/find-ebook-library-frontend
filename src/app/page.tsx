@@ -1,41 +1,38 @@
 /**
  * 홈 페이지
- * Next.js 15 App Router
- * 경로: / (루트)
- *
- * Client Component ('use client' 필요)
- * - useState, useEffect 등 React 훅 사용
- * - 이벤트 핸들러 사용
+ * - 구글처럼 검색창만 남긴 단일 화면
+ * - 검색 결과를 같은 페이지에서 바로 노출
  */
 
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useBookSearch } from '@hooks/useBookSearch';
 import { bookService } from '@lib/services/book.service';
 import styles from './page.module.css';
 
-/**
- * 홈 페이지 컴포넌트
- *
- * Next.js 15의 useRouter (next/navigation):
- * - App Router에서 사용하는 새로운 useRouter
- * - Pages Router의 useRouter (next/router)와 다름
- * - push(), replace() 등의 메서드 제공
- */
 export default function HomePage() {
-  // Next.js 라우터 (페이지 이동용)
-  const router = useRouter();
+  // 검색 훅 (검색어, 결과, 페이징 등)
+  const {
+    keyword,
+    results,
+    currentPage,
+    pageSize,
+    totalResults,
+    isLoading,
+    error,
+    search,
+    changePage,
+    updateKeyword,
+  } = useBookSearch();
 
-  // 검색 훅
-  const { keyword, updateKeyword, search, isLoading } = useBookSearch();
-
-  // 인기 검색어 상태
+  // 인기 검색어 상태 (빠른 입력용)
   const [popularKeywords, setPopularKeywords] = useState<string[]>([]);
 
   /**
-   * 검색 폼 제출 핸들러
+   * 검색 제출 핸들러
+   * - 빈 문자열 방지 후 검색 실행
+   * - 동일 페이지에서 결과 표시
    */
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,30 +42,56 @@ export default function HomePage() {
       return;
     }
 
-    // 검색 실행
-    await search({ keyword });
-
-    // 검색 페이지로 이동
-    // Next.js의 router.push() - 클라이언트 사이드 네비게이션
-    router.push('/search');
+    await search({ keyword, pageNo: 1 });
   };
 
   /**
-   * 인기 검색어 클릭 핸들러
+   * 빠른 키워드 클릭 핸들러
+   * - 선택 키워드로 바로 검색 실행
    */
-  const handlePopularKeywordClick = (searchKeyword: string) => {
+  const handleQuickKeyword = (searchKeyword: string) => {
     updateKeyword(searchKeyword);
-    search({ keyword: searchKeyword });
-    router.push('/search');
+    search({ keyword: searchKeyword, pageNo: 1 });
   };
 
   /**
-   * 컴포넌트 마운트 시 인기 검색어 로드
-   * useEffect는 Client Component에서만 사용 가능
+   * 페이지 변경 핸들러
+   * - 검색어 유지한 상태에서 페이지 이동
+   */
+  const handlePageChange = (page: number) => {
+    changePage(page);
+    search({ keyword, pageNo: page });
+  };
+
+  /**
+   * 페이지 번호 계산 (간단한 5개 창)
+   */
+  const getPageNumbers = () => {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+    const totalPages = Math.ceil(totalResults / pageSize);
+
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  };
+
+  /**
+   * 인기 검색어 초기 로드
+   * - 상위 5개만 빠른 검색 버튼으로 노출
    */
   useEffect(() => {
     const loadPopularKeywords = async () => {
-      const keywords = await bookService.getPopularKeywords(10);
+      const keywords = await bookService.getPopularKeywords(5);
       setPopularKeywords(keywords);
     };
 
@@ -76,13 +99,10 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className={styles.homePage}>
-      {/* 히어로 섹션 */}
-      <div className={styles.heroSection}>
-        <h1>전자도서관 통합 검색</h1>
-        <p>여러 전자도서관의 책을 한 번에 검색하세요</p>
-
-        {/* 검색 폼 */}
+    <div className={styles.page}>
+      {/* 브랜드 + 검색바 */}
+      <div className={styles.hero}>
+        <p className={styles.logo}>전자도서관 통합 검색</p>
         <form onSubmit={handleSearch} className={styles.searchForm}>
           <input
             type="text"
@@ -91,50 +111,10 @@ export default function HomePage() {
             onChange={(e) => updateKeyword(e.target.value)}
             className={styles.searchInput}
           />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={styles.searchButton}
-          >
+          <button type="submit" disabled={isLoading} className={styles.searchButton}>
             {isLoading ? '검색 중...' : '검색'}
           </button>
         </form>
-      </div>
-
-      {/* 인기 검색어 섹션 */}
-      <div className={styles.popularKeywordsSection}>
-        <h2>인기 검색어</h2>
-        <div className={styles.keywordsList}>
-          {popularKeywords.map((kw, index) => (
-            <button
-              key={index}
-              onClick={() => handlePopularKeywordClick(kw)}
-              className={styles.keywordChip}
-            >
-              <span className={styles.keywordRank}>{index + 1}</span>
-              <span className={styles.keywordText}>{kw}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 기능 소개 섹션 */}
-      <div className={styles.featuresSection}>
-        <h2>주요 기능</h2>
-        <div className={styles.featuresGrid}>
-          <div className={styles.featureCard}>
-            <h3>🔍 통합 검색</h3>
-            <p>여러 전자도서관의 전자책을 한 번에 검색</p>
-          </div>
-          <div className={styles.featureCard}>
-            <h3>🧭 도서관 필터링</h3>
-            <p>사용자의 소속에 따라 접근 가능한 도서관만 표시</p>
-          </div>
-          <div className={styles.featureCard}>
-            <h3>📚 베스트셀러 매칭</h3>
-            <p>YES24, 교보문고, 알라딘 베스트셀러가 어떤 도서관에 있는지 확인</p>
-          </div>
-        </div>
       </div>
     </div>
   );

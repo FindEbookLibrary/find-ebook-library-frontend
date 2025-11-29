@@ -10,10 +10,14 @@
  */
 
 .navbar {
-  background-color: #2c3e50;
-  color: white;
-  padding: 1rem 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 0.9rem 2rem;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
 }
 
 .navbarContent {
@@ -22,31 +26,50 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
 .navbarLogo a {
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #e2e8f0;
   text-decoration: none;
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.navbarLogo a::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22d3ee, #2563eb);
+  box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.2);
 }
 
 .navbarMenu {
   list-style: none;
   display: flex;
-  gap: 2rem;
+  gap: 1.4rem;
   margin: 0;
   padding: 0;
 }
 
 .navbarMenu a {
-  color: white;
+  color: #cbd5e1;
   text-decoration: none;
-  transition: opacity 0.2s;
+  font-weight: 700;
+  padding: 0.55rem 0.8rem;
+  border-radius: 12px;
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
 
 .navbarMenu a:hover {
-  opacity: 0.8;
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
 }
 
 .navbarUser {
@@ -55,20 +78,25 @@
 }
 
 .userInfo {
-  color: white;
+  color: #e2e8f0;
+  font-weight: 700;
 }
 
 .loginButton {
-  color: white;
-  background-color: #3498db;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  color: #0b1224;
+  background: linear-gradient(120deg, #22d3ee, #2563eb);
+  padding: 0.65rem 1.15rem;
+  border-radius: 14px;
   text-decoration: none;
-  transition: background-color 0.2s;
+  font-weight: 800;
+  box-shadow: 0 12px 28px rgba(34, 211, 238, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .loginButton:hover {
-  background-color: #2980b9;
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(34, 211, 238, 0.32);
 }
 
 @media (max-width: 768px) {
@@ -78,6 +106,8 @@
   }
 
   .navbarMenu {
-    gap: 1rem;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }

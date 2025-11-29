@@ -39,9 +39,6 @@ export default function Navbar() {
             <Link href="/">홈</Link>
           </li>
           <li>
-            <Link href="/search">검색</Link>
-          </li>
-          <li>
             <Link href="/bestseller">베스트셀러</Link>
           </li>
           <li>

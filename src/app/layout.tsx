@@ -13,6 +13,27 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Providers from './providers';
 import Navbar from '@/components/common/Navbar';
+import { Plus_Jakarta_Sans, Noto_Sans_KR } from 'next/font/google';
+
+/**
+ * 다음 두 폰트는 next/font를 사용해 로드됩니다.
+ * - Plus Jakarta Sans: 라틴 계열 헤드라인에 사용
+ * - Noto Sans KR: 한글 가독성 확보
+ * CSS 변수로 노출해 전역에서 재사용합니다.
+ */
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-plus-jakarta',
+  display: 'swap',
+});
+
+const notoSansKR = Noto_Sans_KR({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-noto-sans',
+  display: 'swap',
+});
 
 /**
  * Metadata
@@ -78,7 +99,10 @@ export default function RootLayout({
        * - Next.js의 Hydration 경고를 억제
        * - 브라우저 확장 프로그램 등이 HTML을 수정할 때 발생하는 경고 방지
        */}
-      <body suppressHydrationWarning>
+      <body
+        suppressHydrationWarning
+        className={`${plusJakartaSans.variable} ${notoSansKR.variable}`}
+      >
         {/**
          * Providers 컴포넌트
          * - React Query, Zustand 등의 Provider를 래핑

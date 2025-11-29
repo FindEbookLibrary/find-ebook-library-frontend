@@ -1,189 +1,86 @@
 /**
- * 홈 페이지 스타일
- * CSS Modules 사용
+ * 홈 페이지 스타일 (구글식 최소 UI)
  */
 
-.homePage {
-  max-width: 1000px;
+.page {
+  max-width: 900px;
   margin: 0 auto;
-}
-
-/* 히어로 섹션 */
-.heroSection {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-.heroSection h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  color: #2c3e50;
-}
-
-.heroSection p {
-  font-size: 1.25rem;
-  color: #7f8c8d;
-  margin-bottom: 2rem;
-}
-
-/* 검색 폼 */
-.searchForm {
+  padding: clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 1.5rem);
   display: flex;
-  gap: 0.5rem;
-  max-width: 600px;
-  margin: 0 auto;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hero {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  border-radius: 20px;
+  padding: clamp(1.8rem, 4vw, 2.4rem);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--secondary-color);
+  text-align: center;
+}
+
+.searchForm {
+  width: min(720px, 100%);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.8rem;
 }
 
 .searchInput {
-  flex: 1;
-  padding: 1rem;
+  padding: 1rem 1.05rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: #f9fafb;
   font-size: 1rem;
-  border: 2px solid #ddd;
-  border-radius: 4px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .searchInput:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: var(--primary-color);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12);
+  transform: translateY(-1px);
 }
 
 .searchButton {
-  padding: 1rem 2rem;
-  background-color: #3498db;
-  color: white;
+  padding: 0.95rem 1.6rem;
+  border-radius: 999px;
   border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  background: linear-gradient(120deg, #22d3ee, #2563eb);
+  color: #0b1224;
+  font-weight: 800;
+  box-shadow: 0 16px 40px rgba(34, 211, 238, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .searchButton:hover:not(:disabled) {
-  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 18px 44px rgba(34, 211, 238, 0.28);
+  opacity: 0.96;
 }
 
 .searchButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  opacity: 0.7;
 }
 
-/* 인기 검색어 섹션 */
-.popularKeywordsSection {
-  padding: 2rem 1rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  margin-top: 2rem;
-}
-
-.popularKeywordsSection h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.keywordsList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: center;
-}
-
-.keywordChip {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.keywordChip:hover {
-  background-color: #3498db;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.keywordRank {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background-color: #3498db;
-  color: white;
-  border-radius: 50%;
-  font-size: 0.875rem;
-  font-weight: bold;
-}
-
-.keywordChip:hover .keywordRank {
-  background-color: white;
-  color: #3498db;
-}
-
-.keywordText {
-  font-size: 0.9rem;
-}
-
-/* 기능 소개 섹션 */
-.featuresSection {
-  padding: 3rem 1rem;
-}
-
-.featuresSection h2 {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.featuresGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-}
-
-.featureCard {
-  padding: 2rem;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  text-align: center;
-  transition: all 0.2s;
-}
-
-.featureCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-.featureCard h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.featureCard p {
-  color: #7f8c8d;
-  line-height: 1.6;
-}
-
-/* 반응형 */
-@media (max-width: 768px) {
-  .heroSection h1 {
-    font-size: 2rem;
-  }
-
-  .heroSection p {
-    font-size: 1rem;
-  }
-
+@media (max-width: 640px) {
   .searchForm {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
-  .featuresGrid {
-    grid-template-columns: 1fr;
+  .searchButton {
+    width: 100%;
   }
 }

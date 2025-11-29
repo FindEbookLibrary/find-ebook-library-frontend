@@ -40,3 +40,5 @@
 - When adding client storage, prefer minimal persistence in Zustand and avoid storing tokens beyond what the backend expects.
 ### Remember
 You should use tools as much as possible, ideally more than 100 times. You should also implement your own tests first before attempting the problem.
+
+너가 작성한 코드들에 대해서 백엔드 개발자인 내가 이해할 수 있도록 문법과 로직을 알기쉽게 주석으로 작성할 것
