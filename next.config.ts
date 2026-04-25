@@ -60,25 +60,14 @@ const nextConfig: NextConfig = {
   },
 
   /**
-   * 실험적 기능 활성화
-   * Next.js 15의 새로운 기능들
+   * Turbopack 설정
+   * Next.js 15.3+에서는 experimental.turbo가 deprecated 되었기 때문에
+   * 최상위 turbopack 키로 옮겨야 Vercel 빌드 경고가 사라진다.
+   *
+   * 현재는 커스텀 로더가 없어서 빈 객체만 유지한다.
+   * 나중에 파일 변환 규칙이 필요해지면 이 블록 안에 추가하면 된다.
    */
-  experimental: {
-    /**
-     * Turbopack 활성화 (개발 서버 성능 향상)
-     * Webpack보다 700배 빠른 번들러
-     */
-    turbo: {
-      // Turbopack 설정 (필요시)
-    },
-
-    /**
-     * Partial Prerendering (PPR) - 실험적 기능
-     * 정적 부분과 동적 부분을 하나의 페이지에서 조합
-     * 현재는 실험적이므로 주석 처리
-     */
-    // ppr: true,
-  },
+  turbopack: {},
 
   /**
    * Rewrites 설정
