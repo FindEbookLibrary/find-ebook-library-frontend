@@ -7,10 +7,9 @@ import { create } from 'zustand';
 import {
   Bookmark,
   BookshelfFolder,
-  ReadStatus,
   BookmarkFilters,
   BookmarkSortBy,
-} from '@types/bookmark.types';
+} from '@/types/bookmark.types';
 
 /**
  * 북마크 Store의 상태 인터페이스
@@ -126,10 +125,16 @@ interface BookmarkState {
   getFilteredBookmarks: () => Bookmark[];
 }
 
+const canUseStorage = (): boolean => typeof window !== 'undefined';
+
 /**
  * 로컬 스토리지에서 북마크 불러오기
  */
 const loadBookmarksFromStorage = (): Bookmark[] => {
+  if (!canUseStorage()) {
+    return [];
+  }
+
   try {
     const stored = localStorage.getItem('bookmarks');
     return stored ? JSON.parse(stored) : [];
@@ -145,6 +150,10 @@ const loadBookmarksFromStorage = (): Bookmark[] => {
  * @param bookmarks - 저장할 북마크 목록
  */
 const saveBookmarksToStorage = (bookmarks: Bookmark[]): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+
   try {
     localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
   } catch (error) {
@@ -156,6 +165,10 @@ const saveBookmarksToStorage = (bookmarks: Bookmark[]): void => {
  * 로컬 스토리지에서 폴더 불러오기
  */
 const loadFoldersFromStorage = (): BookshelfFolder[] => {
+  if (!canUseStorage()) {
+    return [];
+  }
+
   try {
     const stored = localStorage.getItem('bookshelfFolders');
     return stored ? JSON.parse(stored) : [];
@@ -171,6 +184,10 @@ const loadFoldersFromStorage = (): BookshelfFolder[] => {
  * @param folders - 저장할 폴더 목록
  */
 const saveFoldersToStorage = (folders: BookshelfFolder[]): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+
   try {
     localStorage.setItem('bookshelfFolders', JSON.stringify(folders));
   } catch (error) {

@@ -1,13 +1,9 @@
-/**
- * 전자책 검색 커스텀 훅
- * 전자책 검색 로직을 재사용 가능한 훅으로 만듭니다.
- */
-
-import { useEffect } from 'react';
 import { useSearchStore } from '@stores/searchStore';
 import { useUserStore } from '@stores/userStore';
 import { bookService } from '@lib/services/book.service';
-import { BookSearchParams } from '@types/book.types';
+import { getMockSearchResults, shouldUseMockData } from '@lib/mock/data';
+import { bookStats } from '@lib/utils/bookStats';
+import { mapApiBookToEBook } from '@lib/utils/ebook';
 
 /**
  * 전자책 검색 훅
@@ -20,14 +16,14 @@ import { BookSearchParams } from '@types/book.types';
  *   const { search, results, isLoading, error } = useBookSearch();
  *
  *   const handleSearch = () => {
- *     search({ keyword: '해리포터' });
+ *     search('해리포터');
  *   };
  *
  *   return (
  *     <div>
  *       {isLoading && <p>검색 중...</p>}
  *       {error && <p>에러: {error}</p>}
- *       {results.map(book => <div key={book.isbn}>{book.title}</div>)}
+ *       {results.map(book => <div key={book.id}>{book.title}</div>)}
  *     </div>
  *   );
  * }
@@ -50,6 +46,7 @@ export const useBookSearch = () => {
     setLoading,
     setError,
     addRecentKeyword,
+    reset,
   } = useSearchStore();
 
   // 사용자 Store에서 관심 도서관 정보 가져오기
@@ -61,12 +58,13 @@ export const useBookSearch = () => {
   /**
    * 검색 실행 함수
    *
-   * @param params - 검색 파라미터 (키워드, 페이지 등)
+   * @param searchKeyword - 검색 키워드 (선택, 없으면 store의 keyword 사용)
+   * @param page - 페이지 번호 (선택, 없으면 store의 currentPage 사용)
    */
-  const search = async (params?: Partial<BookSearchParams>) => {
+  const search = async (searchKeyword?: string, page?: number) => {
     // 검색 키워드가 없으면 리턴
-    const searchKeyword = params?.keyword || keyword;
-    if (!searchKeyword.trim()) {
+    const finalKeyword = searchKeyword || keyword;
+    if (!finalKeyword.trim()) {
       setError('검색어를 입력해주세요.');
       return;
     }
@@ -76,47 +74,52 @@ export const useBookSearch = () => {
     setError(null);
 
     try {
-      // 관심 도서관 필터가 활성화되어 있으면 관심 도서관 목록을 사용
-      // 그렇지 않으면 선택된 도서관 목록 또는 전체 도서관 사용
-      let targetLibraryCodes = params?.libraryCodes || selectedLibraryCodes;
+      const finalPage = page !== undefined ? page : currentPage;
+      let books;
+      let totalResultsCount = 0;
 
-      if (isInterestFilterEnabled && interestLibraryCodes.length > 0) {
-        // 관심 도서관 필터가 활성화되어 있으면 관심 도서관 목록만 사용
-        targetLibraryCodes = interestLibraryCodes;
-      }
-
-      // 검색 파라미터 구성
-      const searchParams: BookSearchParams = {
-        keyword: searchKeyword,
-        pageNo: params?.pageNo || currentPage,
-        pageSize: params?.pageSize || pageSize,
-        libraryCodes: targetLibraryCodes,
-        searchType: params?.searchType || searchType,
-      };
-
-      // API 호출
-      const response = await bookService.searchBooks(searchParams);
-
-      if (response.result === 'RESULT' && response.books) {
-        // 검색 성공
-        setResults(response.books, response.totalResults || 0);
-
-        // 최근 검색어에 추가
-        addRecentKeyword(searchKeyword);
-
-        // 검색 기록 저장 (비동기로 실행, 실패해도 무시)
-        if (response.books.length > 0) {
-          bookService.saveSearchHistory(response.books[0].isbn).catch(() => {
-            // 저장 실패는 무시
-          });
-        }
+      if (shouldUseMockData()) {
+        books = getMockSearchResults(finalKeyword);
+        totalResultsCount = books.length;
       } else {
-        // 검색 실패
-        setError(response.errorMessage || '검색 결과가 없습니다.');
-        setResults([], 0);
+        const response = await bookService.searchBooks(
+          finalKeyword,
+          Math.max(finalPage - 1, 0),
+          pageSize
+        );
+
+        if (!response.success || !response.data) {
+          setError(response.message || '검색 결과가 없습니다.');
+          setResults([], 0);
+          return;
+        }
+
+        books = response.data.content.map(mapApiBookToEBook);
+        totalResultsCount = response.data.totalElements;
       }
+
+      // "내 도서관만 보기"는 화면 상태이지만,
+      // 검색 결과 수와 카드 배지도 이 필터를 같이 기준으로 삼는 편이 자연스러워서 여기서 잘라줍니다.
+      const filteredBooks =
+        isInterestFilterEnabled && interestLibraryCodes.length > 0
+          ? books.filter(
+              (book) => bookStats(book.availableLibraries, interestLibraryCodes).mine.length > 0
+            )
+          : books;
+
+      setResults(filteredBooks, shouldUseMockData() ? filteredBooks.length : totalResultsCount);
+      addRecentKeyword(finalKeyword);
     } catch (err) {
       console.error('검색 오류:', err);
+
+      if (!shouldUseMockData()) {
+        const fallbackBooks = getMockSearchResults(finalKeyword);
+        setResults(fallbackBooks, fallbackBooks.length);
+        setError('백엔드 응답이 없어 mock 검색 결과를 표시합니다.');
+        addRecentKeyword(finalKeyword);
+        return;
+      }
+
       setError('검색 중 오류가 발생했습니다.');
       setResults([], 0);
     } finally {
@@ -130,7 +133,7 @@ export const useBookSearch = () => {
    */
   const changePage = (page: number) => {
     setCurrentPage(page);
-    search({ pageNo: page });
+    search(undefined, page);
   };
 
   /**
@@ -160,5 +163,6 @@ export const useBookSearch = () => {
     updateKeyword,
     setKeyword,
     setCurrentPage,
+    reset,
   };
 };

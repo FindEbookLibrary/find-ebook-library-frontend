@@ -5,12 +5,16 @@
 
 import { apiClient } from './api.config';
 import {
-  BestsellerBook,
   BestsellerParams,
   BestsellerApiResponse,
   BookStore,
   BestsellerCategory,
-} from '@types/bestseller.types';
+} from '@/types/bestseller.types';
+import {
+  BESTSELLER_CATEGORIES,
+  getMockBestsellers,
+  shouldUseMockData,
+} from '@lib/mock/data';
 
 /**
  * 베스트셀러 서비스 클래스
@@ -33,6 +37,15 @@ class BestsellerService {
    * });
    */
   async getBestsellers(params: BestsellerParams): Promise<BestsellerApiResponse> {
+    if (shouldUseMockData()) {
+      return {
+        result: 'RESULT',
+        bookStore: params.bookStore,
+        timestamp: new Date().toISOString(),
+        bestsellers: getMockBestsellers(params.bookStore, params.category || '종합'),
+      };
+    }
+
     try {
       // API 요청 파라미터 구성
       const requestParams = {
@@ -73,7 +86,8 @@ class BestsellerService {
         result: 'ERROR',
         bookStore: params.bookStore,
         timestamp: new Date().toISOString(),
-        errorMessage: '베스트셀러 조회 중 오류가 발생했습니다.',
+        errorMessage: '베스트셀러 조회 중 오류가 발생했습니다. mock 데이터로 대체해 표시합니다.',
+        bestsellers: getMockBestsellers(params.bookStore, params.category || '종합'),
       };
     }
   }
@@ -119,6 +133,13 @@ class BestsellerService {
    * const categories = await bestsellerService.getCategories(BookStore.YES24);
    */
   async getCategories(bookStore: BookStore): Promise<BestsellerCategory[]> {
+    if (shouldUseMockData()) {
+      return BESTSELLER_CATEGORIES.map((category) => ({
+        code: category,
+        name: category,
+      }));
+    }
+
     try {
       const response = await apiClient.get('/bestsellers/categories', {
         params: { bookStore },
@@ -128,10 +149,16 @@ class BestsellerService {
         return response.data.data;
       }
 
-      return [];
+      return BESTSELLER_CATEGORIES.map((category) => ({
+        code: category,
+        name: category,
+      }));
     } catch (error) {
       console.error('카테고리 조회 실패:', error);
-      return [];
+      return BESTSELLER_CATEGORIES.map((category) => ({
+        code: category,
+        name: category,
+      }));
     }
   }
 
@@ -213,6 +240,10 @@ class BestsellerService {
    * @returns 성공 여부
    */
   async refreshBestsellers(bookStore: BookStore): Promise<boolean> {
+    if (shouldUseMockData()) {
+      return true;
+    }
+
     try {
       const response = await apiClient.post('/bestsellers/refresh', {
         bookStore,

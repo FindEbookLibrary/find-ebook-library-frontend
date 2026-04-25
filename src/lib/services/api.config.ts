@@ -3,14 +3,20 @@
  * axios 인스턴스 설정 및 공통 설정을 관리합니다.
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosError,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 
 /**
  * API 기본 URL
  * Next.js 환경 변수에서 가져오거나 기본값 사용
  * Next.js에서는 import.meta.env 대신 process.env 사용
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 /**
  * 도서관 정보나루 API URL
@@ -41,12 +47,12 @@ const createApiInstance = (baseURL: string, timeout: number = 10000): AxiosInsta
    * 모든 요청 전에 실행되어 헤더에 인증 토큰 등을 추가합니다.
    */
   instance.interceptors.request.use(
-    (config: AxiosRequestConfig) => {
+    (config: InternalAxiosRequestConfig) => {
       // 로컬 스토리지에서 액세스 토큰 가져오기
       const token = localStorage.getItem('accessToken');
 
       // 토큰이 있으면 Authorization 헤더에 추가
-      if (token && config.headers) {
+      if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
 
@@ -79,10 +85,12 @@ const createApiInstance = (baseURL: string, timeout: number = 10000): AxiosInsta
     },
     async (error: AxiosError) => {
       // 응답 오류 처리
-      const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+      const originalRequest = error.config as
+        | (AxiosRequestConfig & { _retry?: boolean })
+        | undefined;
 
       // 401 에러 (인증 실패) 처리
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
         originalRequest._retry = true;
 
         try {
@@ -100,9 +108,8 @@ const createApiInstance = (baseURL: string, timeout: number = 10000): AxiosInsta
             localStorage.setItem('accessToken', accessToken);
 
             // 원래 요청 재시도 (새 토큰 사용)
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            }
+            originalRequest.headers = originalRequest.headers ?? {};
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
             return instance(originalRequest);
           }
@@ -144,34 +151,48 @@ export const libraryApiClient = createApiInstance(LIBRARY_API_URL, 15000);
  * API 응답 공통 인터페이스
  * 백엔드에서 반환하는 응답의 공통 구조
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   /** 성공 여부 */
   success: boolean;
 
   /** 응답 데이터 */
   data?: T;
 
-  /** 에러 메시지 */
+  /** 메시지 */
   message?: string;
 
-  /** 에러 코드 */
-  errorCode?: string;
+  /** 에러 발생 시각 */
+  timestamp?: string;
 }
 
 /**
- * 페이지네이션 응답 인터페이스
- * 목록 조회 API에서 사용하는 페이지네이션 정보 포함
+ * Spring Data 페이지네이션 응답 인터페이스
  */
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  /** 현재 페이지 번호 */
-  pageNo: number;
-
-  /** 페이지당 결과 수 */
-  pageSize: number;
-
-  /** 전체 결과 수 */
-  totalResults: number;
-
-  /** 전체 페이지 수 */
+export interface PageResponse<T> {
+  content: T[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
   totalPages: number;
+  totalElements: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  numberOfElements: number;
+  first: boolean;
+  empty: boolean;
 }

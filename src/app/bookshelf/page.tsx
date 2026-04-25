@@ -11,7 +11,7 @@
 
 import { useState } from 'react';
 import { useBookmarkStore } from '@stores/bookmarkStore';
-import { ReadStatus, BookmarkSortBy } from '@types/bookmark.types';
+import { ReadStatus, BookmarkSortBy } from '@/types/bookmark.types';
 import BookmarkButton from '@components/common/BookmarkButton';
 import Image from 'next/image';
 import styles from './page.module.css';
@@ -22,12 +22,10 @@ import styles from './page.module.css';
 export default function BookshelfPage() {
   const {
     bookmarks,
-    folders,
     filters,
     setFilters,
     getFilteredBookmarks,
     updateBookmark,
-    createFolder,
   } = useBookmarkStore();
 
   const [searchKeyword, setSearchKeyword] = useState('');

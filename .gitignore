@@ -7,6 +7,7 @@ node_modules/
 dist/
 build/
 .next/
+*.tsbuildinfo
 
 # 환경 변수 파일 (민감한 정보 포함)
 .env
@@ -26,6 +27,8 @@ lerna-debug.log*
 .vscode/*
 !.vscode/extensions.json
 .idea
+.claude/
+.codex/
 .DS_Store
 *.suo
 *.ntvs*

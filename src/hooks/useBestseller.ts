@@ -3,10 +3,10 @@
  * 베스트셀러 조회 및 도서관 매칭 로직을 처리합니다.
  */
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useBestsellerStore } from '@stores/bestsellerStore';
 import { bestsellerService } from '@lib/services/bestseller.service';
-import { BookStore } from '@types/bestseller.types';
+import { BookStore } from '@/types/bestseller.types';
 
 /**
  * 베스트셀러 훅
@@ -56,7 +56,7 @@ export const useBestseller = (autoLoad: boolean = false) => {
    * @param bookStore - 서점 (선택, 기본값은 현재 선택된 서점)
    * @param category - 카테고리 (선택)
    */
-  const loadBestsellers = async (
+  const loadBestsellers = useCallback(async (
     bookStore?: BookStore,
     category?: string | null
   ) => {
@@ -76,12 +76,15 @@ export const useBestseller = (autoLoad: boolean = false) => {
         libraryCodes: selectedLibraryCodes,
       });
 
-      if (response.result === 'RESULT' && response.bestsellers) {
-        // 성공
+      if (response.bestsellers) {
+        // mock fallback이 포함된 응답도 여기서 그대로 화면에 연결합니다.
         setBestsellers(response.bestsellers, response.timestamp);
-      } else {
-        // 실패
+      }
+
+      if (response.result !== 'RESULT') {
         setError(response.errorMessage || '베스트셀러 조회 실패');
+      } else if (!response.bestsellers) {
+        setError('베스트셀러 조회 실패');
         setBestsellers([], new Date().toISOString());
       }
     } catch (err) {
@@ -92,7 +95,14 @@ export const useBestseller = (autoLoad: boolean = false) => {
       // 로딩 종료
       setLoading(false);
     }
-  };
+  }, [
+    selectedBookStore,
+    selectedCategory,
+    selectedLibraryCodes,
+    setBestsellers,
+    setError,
+    setLoading,
+  ]);
 
   /**
    * 서점 변경 함수
@@ -133,9 +143,9 @@ export const useBestseller = (autoLoad: boolean = false) => {
    */
   useEffect(() => {
     if (autoLoad && bestsellers.length === 0) {
-      loadBestsellers();
+      void loadBestsellers();
     }
-  }, [autoLoad]);
+  }, [autoLoad, bestsellers.length, loadBestsellers]);
 
   /**
    * 선택된 도서관이 변경되면 베스트셀러 재로드
@@ -143,9 +153,9 @@ export const useBestseller = (autoLoad: boolean = false) => {
    */
   useEffect(() => {
     if (bestsellers.length > 0 && selectedLibraryCodes.length > 0) {
-      loadBestsellers();
+      void loadBestsellers();
     }
-  }, [selectedLibraryCodes]);
+  }, [bestsellers.length, loadBestsellers, selectedLibraryCodes]);
 
   return {
     // 상태

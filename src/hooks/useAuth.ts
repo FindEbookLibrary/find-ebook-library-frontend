@@ -3,12 +3,31 @@
  * 로그인, 로그아웃, 회원가입 등 사용자 인증 로직을 처리합니다.
  */
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@stores/userStore';
-import { apiClient } from '@lib/services/api.config';
+import { authService } from '@lib/services/auth.service';
 import { libraryService } from '@lib/services/library.service';
-import { LoginParams, SignupParams } from '@types/user.types';
+import type { LoginRequest, RegisterRequest } from '@/types/api.types';
+import type { Library } from '@/types/library.types';
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error
+  ) {
+    const message = (
+      error as { response?: { data?: { message?: string } } }
+    ).response?.data?.message;
+
+    if (message) {
+      return message;
+    }
+  }
+
+  return fallback;
+};
 
 /**
  * 인증 훅
@@ -53,19 +72,32 @@ export const useAuth = () => {
    * @param params - 로그인 파라미터 (이메일, 비밀번호)
    * @returns 성공 여부
    */
-  const login = async (params: LoginParams): Promise<boolean> => {
+  const login = async (params: LoginRequest): Promise<boolean> => {
     setLoading(true);
     setError(null);
 
     try {
       // 로그인 API 호출
-      const response = await apiClient.post('/auth/login', params);
+      const response = await authService.login(params);
 
-      if (response.data.success) {
-        const { user, tokens } = response.data.data;
+      if (response.success && response.data) {
+        const { user, accessToken, refreshToken } = response.data;
 
-        // 사용자 정보와 토큰 저장
-        setUser(user, tokens);
+        // 사용자 정보와 토큰 저장 (Zustand store에 맞게 변환)
+        setUser(
+          {
+            id: user.id.toString(),
+            name: user.username,
+            email: user.email,
+            affiliations: [],
+            accessibleLibraryCodes: [],
+          },
+          {
+            accessToken,
+            refreshToken,
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24시간 후
+          }
+        );
 
         // 접근 가능한 도서관 목록 로드
         await loadAccessibleLibraries();
@@ -75,14 +107,12 @@ export const useAuth = () => {
 
         return true;
       } else {
-        setError(response.data.message || '로그인 실패');
+        setError(response.message || '로그인 실패');
         return false;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('로그인 오류:', err);
-      setError(
-        err.response?.data?.message || '로그인 중 오류가 발생했습니다.'
-      );
+      setError(getErrorMessage(err, '로그인 중 오류가 발생했습니다.'));
       return false;
     } finally {
       setLoading(false);
@@ -95,36 +125,27 @@ export const useAuth = () => {
    * @param params - 회원가입 파라미터
    * @returns 성공 여부
    */
-  const signup = async (params: SignupParams): Promise<boolean> => {
+  const signup = async (params: RegisterRequest): Promise<boolean> => {
     setLoading(true);
     setError(null);
 
     try {
       // 회원가입 API 호출
-      const response = await apiClient.post('/auth/signup', params);
+      const response = await authService.register(params);
 
-      if (response.data.success) {
-        const { user, tokens } = response.data.data;
-
-        // 사용자 정보와 토큰 저장
-        setUser(user, tokens);
-
-        // 접근 가능한 도서관 목록 로드
-        await loadAccessibleLibraries();
-
-        // 홈 페이지로 이동
-        router.push('/');
-
-        return true;
+      if (response.success && response.data) {
+        // 회원가입 성공 후 자동 로그인
+        return await login({
+          email: params.email,
+          password: params.password,
+        });
       } else {
-        setError(response.data.message || '회원가입 실패');
+        setError(response.message || '회원가입 실패');
         return false;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('회원가입 오류:', err);
-      setError(
-        err.response?.data?.message || '회원가입 중 오류가 발생했습니다.'
-      );
+      setError(getErrorMessage(err, '회원가입 중 오류가 발생했습니다.'));
       return false;
     } finally {
       setLoading(false);
@@ -134,26 +155,26 @@ export const useAuth = () => {
   /**
    * 로그아웃 함수
    */
-  const logout = () => {
-    // 백엔드에 로그아웃 요청 (실패해도 무시)
-    apiClient.post('/auth/logout').catch(() => {
-      // 로그아웃 실패는 무시
-    });
-
+  const logout = useCallback(() => {
     // 로컬 상태 초기화
+    authService.logout();
     logoutAction();
 
     // 로그인 페이지로 이동
     router.push('/login');
-  };
+  }, [logoutAction, router]);
 
   /**
    * 접근 가능한 도서관 목록 로드
    */
   const loadAccessibleLibraries = async () => {
     try {
-      const libraries = await libraryService.getAccessibleLibraries();
-      setAccessibleLibraries(libraries);
+      const response = await libraryService.getLibraries();
+
+      if (response.success && response.data) {
+        const libraries: Library[] = response.data;
+        setAccessibleLibraries(libraries);
+      }
     } catch (err) {
       console.error('도서관 목록 로드 실패:', err);
     }
@@ -166,10 +187,16 @@ export const useAuth = () => {
     if (!user) return;
 
     try {
-      const response = await apiClient.get('/auth/me');
+      const response = await authService.getCurrentUser();
 
-      if (response.data.success) {
-        updateUser(response.data.data);
+      if (response.success && response.data) {
+        updateUser({
+          id: response.data.id.toString(),
+          name: response.data.username,
+          email: response.data.email,
+          affiliations: user.affiliations,
+          accessibleLibraryCodes: user.accessibleLibraryCodes,
+        });
       }
     } catch (err) {
       console.error('사용자 정보 갱신 실패:', err);
@@ -182,24 +209,16 @@ export const useAuth = () => {
   const isAuthenticated = !!user && !!tokens;
 
   /**
-   * 토큰 만료 확인
-   */
-  const isTokenExpired = () => {
-    if (!tokens) return true;
-
-    // 만료 시간이 현재 시간보다 이전이면 만료
-    return tokens.expiresAt < Date.now();
-  };
-
-  /**
    * 컴포넌트 마운트 시 토큰 유효성 확인
    */
   useEffect(() => {
-    if (isAuthenticated && isTokenExpired()) {
+    const tokenExpired = tokens ? tokens.expiresAt < Date.now() : true;
+
+    if (isAuthenticated && tokenExpired) {
       // 토큰이 만료되었으면 로그아웃
       logout();
     }
-  }, []);
+  }, [isAuthenticated, logout, tokens]);
 
   return {
     // 상태

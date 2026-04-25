@@ -4,8 +4,15 @@
  */
 
 import { create } from 'zustand';
-import { User, AuthTokens } from '@types/user.types';
-import { Library } from '@types/library.types';
+import { User, AuthTokens } from '@/types/user.types';
+import { Library } from '@/types/library.types';
+import { AffiliationUIType } from '@/types/ui.types';
+import {
+  DEFAULT_AFFILIATION_TYPE,
+  DEFAULT_INTEREST_LIBRARY_CODES,
+  MOCK_LIBRARIES,
+  shouldUseMockData,
+} from '@lib/mock/data';
 
 /**
  * 사용자 Store의 상태 인터페이스
@@ -22,6 +29,9 @@ interface UserState {
 
   /** 사용자가 관심있는(필터링하고 싶은) 도서관 코드 목록 */
   interestLibraryCodes: string[];
+
+  /** 사용자가 현재 선택한 소속 유형 */
+  affiliationType: AffiliationUIType | null;
 
   /** 관심 도서관 필터링 활성화 여부 */
   isInterestFilterEnabled: boolean;
@@ -57,6 +67,13 @@ interface UserState {
    * @param libraries - 도서관 목록
    */
   setAccessibleLibraries: (libraries: Library[]) => void;
+
+  /**
+   * 소속 유형 설정
+   *
+   * @param affiliationType - 화면에서 선택한 소속 유형
+   */
+  setAffiliationType: (affiliationType: AffiliationUIType | null) => void;
 
   /**
    * 로그아웃
@@ -120,11 +137,17 @@ interface UserState {
   clearInterestLibraries: () => void;
 }
 
+const canUseStorage = (): boolean => typeof window !== 'undefined';
+
 /**
  * 로컬 스토리지에서 저장된 토큰 불러오기
  * 페이지 새로고침 시에도 로그인 상태 유지를 위해 사용
  */
 const loadTokensFromStorage = (): AuthTokens | null => {
+  if (!canUseStorage()) {
+    return null;
+  }
+
   try {
     const accessToken = localStorage.getItem('accessToken');
     const refreshToken = localStorage.getItem('refreshToken');
@@ -151,6 +174,10 @@ const loadTokensFromStorage = (): AuthTokens | null => {
  * @param tokens - 저장할 토큰 정보
  */
 const saveTokensToStorage = (tokens: AuthTokens): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+
   try {
     localStorage.setItem('accessToken', tokens.accessToken);
     localStorage.setItem('refreshToken', tokens.refreshToken);
@@ -164,6 +191,10 @@ const saveTokensToStorage = (tokens: AuthTokens): void => {
  * 로컬 스토리지에서 토큰 제거
  */
 const removeTokensFromStorage = (): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+
   try {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
@@ -178,12 +209,16 @@ const removeTokensFromStorage = (): void => {
  * 페이지 새로고침 시에도 관심 도서관 목록을 유지하기 위해 사용
  */
 const loadInterestLibrariesFromStorage = (): string[] => {
+  if (!canUseStorage()) {
+    return DEFAULT_INTEREST_LIBRARY_CODES;
+  }
+
   try {
     const stored = localStorage.getItem('interestLibraryCodes');
-    return stored ? JSON.parse(stored) : [];
+    return stored ? JSON.parse(stored) : DEFAULT_INTEREST_LIBRARY_CODES;
   } catch (error) {
     console.error('관심 도서관 목록 로드 실패:', error);
-    return [];
+    return DEFAULT_INTEREST_LIBRARY_CODES;
   }
 };
 
@@ -193,6 +228,10 @@ const loadInterestLibrariesFromStorage = (): string[] => {
  * @param libCodes - 관심 도서관 코드 배열
  */
 const saveInterestLibrariesToStorage = (libCodes: string[]): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+
   try {
     localStorage.setItem('interestLibraryCodes', JSON.stringify(libCodes));
   } catch (error) {
@@ -201,9 +240,52 @@ const saveInterestLibrariesToStorage = (libCodes: string[]): void => {
 };
 
 /**
+ * 로컬 스토리지에서 선택한 소속 유형 불러오기
+ */
+const loadAffiliationTypeFromStorage = (): AffiliationUIType | null => {
+  if (!canUseStorage()) {
+    return DEFAULT_AFFILIATION_TYPE;
+  }
+
+  try {
+    const stored = localStorage.getItem('affiliationType');
+    return (stored as AffiliationUIType | null) || DEFAULT_AFFILIATION_TYPE;
+  } catch (error) {
+    console.error('소속 유형 로드 실패:', error);
+    return DEFAULT_AFFILIATION_TYPE;
+  }
+};
+
+/**
+ * 로컬 스토리지에 선택한 소속 유형 저장
+ */
+const saveAffiliationTypeToStorage = (
+  affiliationType: AffiliationUIType | null
+): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+
+  try {
+    if (affiliationType) {
+      localStorage.setItem('affiliationType', affiliationType);
+      return;
+    }
+
+    localStorage.removeItem('affiliationType');
+  } catch (error) {
+    console.error('소속 유형 저장 실패:', error);
+  }
+};
+
+/**
  * 로컬 스토리지에서 관심 도서관 필터 활성화 상태 불러오기
  */
 const loadInterestFilterEnabledFromStorage = (): boolean => {
+  if (!canUseStorage()) {
+    return false;
+  }
+
   try {
     const stored = localStorage.getItem('isInterestFilterEnabled');
     return stored === 'true';
@@ -219,6 +301,10 @@ const loadInterestFilterEnabledFromStorage = (): boolean => {
  * @param enabled - 활성화 여부
  */
 const saveInterestFilterEnabledToStorage = (enabled: boolean): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+
   try {
     localStorage.setItem('isInterestFilterEnabled', enabled.toString());
   } catch (error) {
@@ -235,8 +321,9 @@ export const useUserStore = create<UserState>((set, get) => ({
   // 초기 상태
   user: null,
   tokens: loadTokensFromStorage(), // 로컬 스토리지에서 토큰 불러오기
-  accessibleLibraries: [],
+  accessibleLibraries: shouldUseMockData() ? MOCK_LIBRARIES : [],
   interestLibraryCodes: loadInterestLibrariesFromStorage(), // 로컬 스토리지에서 관심 도서관 불러오기
+  affiliationType: loadAffiliationTypeFromStorage(),
   isInterestFilterEnabled: loadInterestFilterEnabledFromStorage(), // 로컬 스토리지에서 필터 상태 불러오기
   isLoading: false,
   error: null,
@@ -266,13 +353,19 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ accessibleLibraries: libraries });
   },
 
+  setAffiliationType: (affiliationType) => {
+    saveAffiliationTypeToStorage(affiliationType);
+    set({ affiliationType });
+  },
+
   logout: () => {
     removeTokensFromStorage(); // 로컬 스토리지에서 토큰 제거
 
     set({
       user: null,
       tokens: null,
-      accessibleLibraries: [],
+      accessibleLibraries: shouldUseMockData() ? MOCK_LIBRARIES : [],
+      affiliationType: DEFAULT_AFFILIATION_TYPE,
       error: null,
     });
   },

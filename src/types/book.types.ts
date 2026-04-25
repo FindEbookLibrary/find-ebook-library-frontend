@@ -6,7 +6,38 @@
 /**
  * 전자책 정보를 나타내는 인터페이스
  */
+export type AvailStatus = 'available' | 'reserve' | 'held' | 'none';
+
+/**
+ * 도서관별 가용 상태를 단순화한 엔트리입니다.
+ * UI에서는 이 배열을 기반으로 "내 도서관 우선" 표시를 계산합니다.
+ */
+export interface BookAvailEntry {
+  libCode: string;
+  status: AvailStatus;
+}
+
+/**
+ * 한 권의 책에 대해 화면에서 반복적으로 쓰는 집계 결과입니다.
+ * 화면마다 같은 계산을 중복하지 않도록 유틸 함수의 반환 타입으로 사용합니다.
+ */
+export interface BookStats {
+  entries: BookAvailEntry[];
+  owned: BookAvailEntry[];
+  mine: BookAvailEntry[];
+  primary:
+    | 'mineAvailable'
+    | 'mineReserve'
+    | 'mineHeld'
+    | 'otherAvailable'
+    | 'otherHeld'
+    | 'none';
+}
+
 export interface EBook {
+  /** 프로토타입 mock 데이터에서 사용하는 내부 식별자 */
+  id?: string;
+
   /** 책 고유 ISBN (International Standard Book Number) */
   isbn: string;
 
@@ -31,6 +62,9 @@ export interface EBook {
   /** 카테고리/분류 */
   category?: string;
 
+  /** 목차 일부 */
+  toc?: string[];
+
   /** 이 책을 보유한 도서관 목록 */
   availableLibraries?: LibraryBookInfo[];
 }
@@ -48,6 +82,9 @@ export interface LibraryBookInfo {
   /** 대출 가능 여부 */
   isAvailable: boolean;
 
+  /** 대출 상태를 UI 친화적인 값으로 보관합니다. */
+  status?: AvailStatus;
+
   /** 책 상세 페이지 URL (도서관 웹사이트) */
   detailUrl?: string;
 
@@ -56,6 +93,9 @@ export interface LibraryBookInfo {
 
   /** 전체 보유 권수 */
   totalCopies?: number;
+
+  /** 예약/대기 인원 */
+  waitingCount?: number;
 }
 
 /**

@@ -6,8 +6,8 @@
 'use client';
 
 import { useBookmarkStore } from '@stores/bookmarkStore';
-import { ReadStatus } from '@types/bookmark.types';
-import { EBook } from '@types/book.types';
+import { ReadStatus } from '@/types/bookmark.types';
+import { EBook } from '@/types/book.types';
 import styles from './BookmarkButton.module.css';
 
 /**

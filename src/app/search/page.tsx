@@ -1,10 +1,15 @@
-/**
- * /search 경로는 홈 검색과 중복되므로 루트로 리다이렉트합니다.
- * Server Component로 두어 클라이언트 번들을 최소화합니다.
- */
+import { Suspense } from 'react';
 
-import { redirect } from 'next/navigation';
+import SearchExperience from '@components/search/SearchExperience';
 
-export default function SearchRedirectPage() {
-  redirect('/');
+function SearchPageFallback() {
+  return <div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-5 md:px-8">검색 결과를 불러오는 중...</div>;
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchPageFallback />}>
+      <SearchExperience />
+    </Suspense>
+  );
 }

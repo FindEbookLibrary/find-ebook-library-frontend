@@ -6,6 +6,13 @@
 /**
  * 전자도서관 정보를 나타내는 인터페이스
  */
+export interface Platform {
+  id: string;
+  name: string;
+  short: string;
+  tone: string;
+}
+
 export interface Library {
   /** 도서관 고유 코드 */
   libCode: string;
@@ -15,6 +22,9 @@ export interface Library {
 
   /** 도서관 주소 */
   address?: string;
+
+  /** 도서관 설명 */
+  description?: string;
 
   /** 도서관 전화번호 */
   tel?: string;
@@ -27,6 +37,18 @@ export interface Library {
 
   /** 도서관 타입 (대학도서관, 공공도서관, 전문도서관 등) */
   type?: LibraryType;
+
+  /** 연동 전자책 플랫폼 */
+  platform?: string;
+
+  /** 소속 인증이 필요한지 여부 */
+  authNeeded?: boolean;
+
+  /** 마지막 동기화 시각 */
+  lastSync?: string;
+
+  /** 지역 정보 */
+  region?: string;
 
   /** 위도 */
   latitude?: number;
@@ -42,6 +64,7 @@ export enum LibraryType {
   UNIVERSITY = 'UNIVERSITY',        // 대학도서관
   PUBLIC = 'PUBLIC',                // 공공도서관
   CORPORATE = 'CORPORATE',          // 기업도서관
+  REGIONAL = 'REGIONAL',            // 시/군/구 도서관
   SPECIALIZED = 'SPECIALIZED',      // 전문도서관
 }
 

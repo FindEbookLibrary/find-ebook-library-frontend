@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand';
-import { EBook, SearchType } from '@types/book.types';
+import { EBook, SearchType } from '@/types/book.types';
 
 /**
  * 검색 Store의 상태 인터페이스
@@ -126,10 +126,16 @@ interface SearchState {
   reset: () => void;
 }
 
+const canUseStorage = (): boolean => typeof window !== 'undefined';
+
 /**
  * 로컬 스토리지에서 최근 검색어 불러오기
  */
 const loadRecentKeywords = (): string[] => {
+  if (!canUseStorage()) {
+    return [];
+  }
+
   try {
     const saved = localStorage.getItem('recentKeywords');
     return saved ? JSON.parse(saved) : [];
@@ -145,6 +151,10 @@ const loadRecentKeywords = (): string[] => {
  * @param keywords - 검색어 목록
  */
 const saveRecentKeywords = (keywords: string[]): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+
   try {
     localStorage.setItem('recentKeywords', JSON.stringify(keywords));
   } catch (error) {

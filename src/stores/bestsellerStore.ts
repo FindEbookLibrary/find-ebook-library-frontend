@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand';
-import { BestsellerBook, BookStore } from '@types/bestseller.types';
+import { BestsellerBook, BookStore } from '@/types/bestseller.types';
 
 /**
  * 베스트셀러 Store의 상태 인터페이스
